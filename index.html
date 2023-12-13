@@ -34,8 +34,8 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             resize: none;
-            width: 100%; /* 宽度 100% */
-            height: 400px; /* 高度 400px */
+            width: 100%;
+            height: 400px;
         }
 
         /* 输出文本框样式 */
@@ -45,8 +45,8 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             resize: none;
-            width: 100%; /* 宽度 100% */
-            height: 400px; /* 高度 400px */
+            width: 100%;
+            height: 400px;
         }
 
         /* 按钮容器样式 */
@@ -87,13 +87,43 @@
             font-weight: bold;
             font-size: 1.1em;
         }
-
-        /* Java Applet容器样式 */
-        .applet-container {
+        #messageBox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
             text-align: center;
-            margin: 20px;
+            font-weight: bold;
         }
+
     </style>
+</head>
+<body>
+    <h1>基督教詞彙替换工具</h1>
+    <div class="text-box-container">
+        <textarea id="inputText" rows="10" cols="80" placeholder="在这里输入或粘贴文本..."></textarea>
+        <textarea id="outputText" rows="10" cols="80" placeholder="替换后的文本将在这里显示..."></textarea>
+    </div>
+    
+    <div class="button-container">
+        <button id="convertButton">簡體轉繁體</button>
+        <button id="replaceButton">替换文本</button>
+        <button id="copyButton">全选复制</button>
+    </div>
+    <div id="messageBox" style="display: none;"></div>
+    <div class="result-container">
+        <div id="replaceResult" class="bold-text">已完成以下关键词的替换：</div>
+        <div id="replaceCount" class="bold-text">已替换 0 个关键词。</div>
+    </div>
+    
+
+    <!-- 将 JavaScript 代码放在页面底部 -->
+    <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/cn2t.js"></script>
     <script>
         var dataUrl = 'https://raw.githubusercontent.com/Enoooch0921/Srt-Christian-vocabulary-replacement/main/keywords.csv';
 
@@ -123,14 +153,12 @@
                     keywords[parts[0].trim()] = parts[1].trim();
                 }
             }
-            console.log("关键词对象：", keywords); // 调试输出
+            console.log("关键词对象：", keywords);
             return keywords;
         }
 
         function replaceText(keywords) {
             var inputText = document.getElementById('inputText').value;
-            console.log("原始文本：", inputText); // 调试输出
-
             var replacedText = inputText;
             var count = 0;
             var logText = "<div class='bold-text'>已完成以下关键词的替换：</div><br>";
@@ -147,18 +175,15 @@
                 }
             }
 
-            // 显示替换结果
             document.getElementById('outputText').value = replacedText;
-
-            // 显示替换结果并换行
             document.getElementById('replaceResult').innerHTML = logText;
             document.getElementById('replaceCount').innerHTML = "<div class='bold-text'>已替换 " + count + " 个关键词。</div>";
         }
 
         function selectAndCopy() {
             var outputText = document.getElementById('outputText');
-            outputText.select(); // 选择文本
-            document.execCommand('copy'); // 复制文本到剪贴板
+            outputText.select();
+            document.execCommand('copy');
             alert('已复制到剪贴板');
         }
 
@@ -170,26 +195,40 @@
             };
             document.getElementById('copyButton').onclick = selectAndCopy;
         });
+
+       // 引入 OpenCC 库
+        const converter = OpenCC.Converter({ from: 'cn', to: 'tw' });
+
+        // 获取按钮元素
+        var convertButton = document.getElementById('convertButton');
+
+        // 获取消息框元素
+        var messageBox = document.getElementById('messageBox');
+
+        // 添加点击事件处理程序
+        convertButton.addEventListener('click', function() {
+            // 获取 inputText 文本框的值
+            var inputText = document.getElementById('inputText');
+            var inputTextValue = inputText.value;
+
+            // 将 inputText 文本框的值传递给 converter 进行转换
+            var convertedText = converter(inputTextValue);
+
+            // 将转换后的文本设置回 inputText 文本框
+            inputText.value = convertedText;
+
+            // 设置消息文本
+            var messageText = '繁體轉換成功！';
+
+            // 显示提示消息
+            messageBox.style.display = 'block';
+            messageBox.innerText = messageText;
+
+            // 隔一段时间后隐藏提示消息
+            setTimeout(function() {
+                messageBox.style.display = 'none';
+            }, 3000); // 3秒后隐藏消息
+        });
     </script>
-</head>
-<body>
-    <h1>基督教詞彙替换工具</h1>
-    <div class="text-box-container">
-        <textarea id="inputText" rows="10" cols="80" placeholder="在这里输入或粘贴文本..."></textarea>
-        <textarea id="outputText" rows="10" cols="80" placeholder="替换后的文本将在这里显示..."></textarea>
-    </div>
-    <div class="button-container">
-        <button id="replaceButton">替换文本</button>
-        <button id="copyButton">全选复制</button>
-    </div>
-    <div class="result-container">
-        <div id="replaceResult" class="bold-text">已完成以下关键词的替换：</div>
-        <div id="replaceCount" class="bold-text">已替换 0 个关键词。</div>
-    </div>
-    <div class="applet-container">
-        <applet code="YourAppletClass.class" width="400" height="300">
-            <!-- 在这里设置Applet的参数 -->
-        </applet>
-    </div>
 </body>
 </html>
