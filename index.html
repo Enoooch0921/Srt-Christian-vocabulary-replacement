@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>基督教詞彙替换工具</title>
+    <style>
+        /* 主容器样式 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 头部样式 */
+        h1 {
+            background-color: #4285f4;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* 输入和输出文本框容器样式 */
+        .text-box-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            margin: 10px;
+        }
+
+        /* 输入文本框样式 */
+        #inputText {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            width: 100%; /* 宽度 100% */
+            height: 400px; /* 高度 400px */
+        }
+
+        /* 输出文本框样式 */
+        #outputText {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            width: 100%; /* 宽度 100% */
+            height: 400px; /* 高度 400px */
+        }
+
+        /* 按钮容器样式 */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 按钮样式 */
+        button {
+            background-color: #4285f4;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        /* 按钮悬停样式 */
+        button:hover {
+            background-color: #3570e8;
+        }
+
+        /* 结果容器样式 */
+        .result-container {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* 加粗文本样式 */
+        .bold-text {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Java Applet容器样式 */
+        .applet-container {
+            text-align: center;
+            margin: 20px;
+        }
+    </style>
+    <script>
+        var dataUrl = 'https://raw.githubusercontent.com/Enoooch0921/Srt-Christian-vocabulary-replacement/main/keywords.csv';
+
+        function loadData(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = xhr.responseText;
+                    callback(response);
+                }
+            };
+            xhr.open('GET', url, true);
+            xhr.send();
+        }
+
+        // 添加 RegExp.escape 函数
+        RegExp.escape = function(s) {
+            return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        };
+
+        function parseCsvData(csvData) {
+            var lines = csvData.split('\n');
+            var keywords = {};
+            for (var i = 0; i < lines.length; i++) {
+                var parts = lines[i].split(',');
+                if (parts.length >= 2) {
+                    keywords[parts[0].trim()] = parts[1].trim();
+                }
+            }
+            console.log("关键词对象：", keywords); // 调试输出
+            return keywords;
+        }
+
+        function replaceText(keywords) {
+            var inputText = document.getElementById('inputText').value;
+            console.log("原始文本：", inputText); // 调试输出
+
+            var replacedText = inputText;
+            var count = 0;
+            var logText = "<div class='bold-text'>已完成以下关键词的替换：</div><br>";
+
+            for (var key in keywords) {
+                var regExp = new RegExp(RegExp.escape(key), 'g');
+                var replacement = keywords[key];
+                var matches = replacedText.match(regExp);
+
+                if (matches) {
+                    count += matches.length;
+                    replacedText = replacedText.replace(regExp, replacement);
+                    logText += key + ": " + replacement + "<br>";
+                }
+            }
+
+            // 显示替换结果
+            document.getElementById('outputText').value = replacedText;
+
+            // 显示替换结果并换行
+            document.getElementById('replaceResult').innerHTML = logText;
+            document.getElementById('replaceCount').innerHTML = "<div class='bold-text'>已替换 " + count + " 个关键词。</div>";
+        }
+
+        function selectAndCopy() {
+            var outputText = document.getElementById('outputText');
+            outputText.select(); // 选择文本
+            document.execCommand('copy'); // 复制文本到剪贴板
+            alert('已复制到剪贴板');
+        }
+
+        // 加载数据并替换文本
+        loadData(dataUrl, function(csvData) {
+            var keywords = parseCsvData(csvData);
+            document.getElementById('replaceButton').onclick = function() {
+                replaceText(keywords);
+            };
+            document.getElementById('copyButton').onclick = selectAndCopy;
+        });
+    </script>
+</head>
+<body>
+    <h1>基督教詞彙替换工具</h1>
+    <div class="text-box-container">
+        <textarea id="inputText" rows="10" cols="80" placeholder="在这里输入或粘贴文本..."></textarea>
+        <textarea id="outputText" rows="10" cols="80" placeholder="替换后的文本将在这里显示..."></textarea>
+    </div>
+    <div class="button-container">
+        <button id="replaceButton">替换文本</button>
+        <button id="copyButton">全选复制</button>
+    </div>
+    <div class="result-container">
+        <div id="replaceResult" class="bold-text">已完成以下关键词的替换：</div>
+        <div id="replaceCount" class="bold-text">已替换 0 个关键词。</div>
+    </div>
+    <div class="applet-container">
+        <applet code="YourAppletClass.class" width="400" height="300">
+            <!-- 在这里设置Applet的参数 -->
+        </applet>
+    </div>
+</body>
+</html>
