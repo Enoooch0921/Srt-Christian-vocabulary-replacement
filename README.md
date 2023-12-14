@@ -1,7 +1,7 @@
 # 基督教詞彙替換工具
 
 這是一個基督教詞彙替換工具，當你使用剪映製作完的 srt 文本，可以直接使用，它允許你在文本中替換特定的關鍵詞，以及將簡體中文轉換為繁體中文。這個工具是基於HTML、CSS和JavaScript構建的，可以輕鬆地在瀏覽器中運行。
-**目前只針對繁體中文使用
+目前只針對繁體中文使用/n
 你可以直接在 [GitHub Pages](https://enoooch0921.github.io/Srt-Christian-vocabulary-replacement/) 上使用這個工具。
 
 ## 功能
