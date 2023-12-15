@@ -87,6 +87,7 @@
             font-weight: bold;
             font-size: 1.1em;
         }
+
         #messageBox {
             display: none;
             position: fixed;
@@ -104,131 +105,140 @@
     </style>
 </head>
 <body>
-    <h1>基督教詞彙替换工具</h1>
-    <div class="text-box-container">
-        <textarea id="inputText" rows="10" cols="80" placeholder="在这里输入或粘贴文本..."></textarea>
-        <textarea id="outputText" rows="10" cols="80" placeholder="替换后的文本将在这里显示..."></textarea>
-    </div>
-    
-    <div class="button-container">
-        <button id="convertButton">簡體轉繁體</button>
-        <button id="replaceButton">替换文本</button>
-        <button id="copyButton">全选复制</button>
-    </div>
-    <div id="messageBox" style="display: none;"></div>
-    <div class="result-container">
-        <div id="replaceResult" class="bold-text">已完成以下关键词的替换：</div>
-        <div id="replaceCount" class="bold-text">已替换 0 个关键词。</div>
-    </div>
-    
+<h1>基督教詞彙替换工具</h1>
+<div class="text-box-container">
+    <textarea id="inputText" rows="10" cols="80" placeholder="在这里输入或粘贴文本..."></textarea>
+    <textarea id="outputText" rows="10" cols="80" placeholder="替换后的文本将在这里显示..."></textarea>
+</div>
 
-    <!-- 将 JavaScript 代码放在页面底部 -->
-    <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/cn2t.js"></script>
-    <script>
-        var dataUrl = 'https://raw.githubusercontent.com/Enoooch0921/Srt-Christian-vocabulary-replacement/main/keywords.csv';
+<div class="button-container">
+    <button id="convertButton">簡體轉繁體</button>
+    <button id="replaceButton">替换文本并首字母大写</button>
+    <button id="copyButton">全选复制</button>
+</div>
+<div id="messageBox" style="display: none;"></div>
+<div class="result-container">
+    <div id="replaceResult" class="bold-text">已完成以下关键词的替换：</div>
+    <div id="replaceCount" class="bold-text">已替换 0 个关键词。</div>
+</div>
 
-        function loadData(url, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    var response = xhr.responseText;
-                    callback(response);
-                }
-            };
-            xhr.open('GET', url, true);
-            xhr.send();
-        }
+<!-- 将 JavaScript 代码放在页面底部 -->
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/cn2t.js"></script>
+<script>
+    var dataUrl = 'https://raw.githubusercontent.com/Enoooch0921/Srt-Christian-vocabulary-replacement/main/keywords.csv';
 
-        // 添加 RegExp.escape 函数
-        RegExp.escape = function(s) {
-            return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    function loadData(url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var response = xhr.responseText;
+                callback(response);
+            }
         };
+        xhr.open('GET', url, true);
+        xhr.send();
+    }
 
-        function parseCsvData(csvData) {
-            var lines = csvData.split('\n');
-            var keywords = {};
-            for (var i = 0; i < lines.length; i++) {
-                var parts = lines[i].split(',');
-                if (parts.length >= 2) {
-                    keywords[parts[0].trim()] = parts[1].trim();
-                }
-            }
-            console.log("关键词对象：", keywords);
-            return keywords;
-        }
+    // 添加 RegExp.escape 函数
+    RegExp.escape = function(s) {
+        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    };
 
-        function replaceText(keywords) {
-            var inputText = document.getElementById('inputText').value;
-            var replacedText = inputText;
-            var count = 0;
-            var logText = "<div class='bold-text'>已完成以下关键词的替换：</div><br>";
-
-            for (var key in keywords) {
-                var regExp = new RegExp(RegExp.escape(key), 'g');
-                var replacement = keywords[key];
-                var matches = replacedText.match(regExp);
-
-                if (matches) {
-                    count += matches.length;
-                    replacedText = replacedText.replace(regExp, replacement);
-                    logText += key + ": " + replacement + "<br>";
-                }
-            }
-
-            document.getElementById('outputText').value = replacedText;
-            document.getElementById('replaceResult').innerHTML = logText;
-            document.getElementById('replaceCount').innerHTML = "<div class='bold-text'>已替换 " + count + " 个关键词。</div>";
-        }
-
-        function selectAndCopy() {
-            var outputText = document.getElementById('outputText');
-            outputText.select();
-            document.execCommand('copy');
-            alert('已复制到剪贴板');
-        }
-
-        // 加载数据并替换文本
-        loadData(dataUrl, function(csvData) {
-            var keywords = parseCsvData(csvData);
-            document.getElementById('replaceButton').onclick = function() {
-                replaceText(keywords);
-            };
-            document.getElementById('copyButton').onclick = selectAndCopy;
+    // 定义函数来执行英文首字母大写转换
+    function capitalizeWords(text) {
+        // 使用正则表达式匹配英文单词，并将其首字母转换为大写
+        return text.replace(/\b\w/g, function (match) {
+            return match.toUpperCase();
         });
+    }
 
-       // 引入 OpenCC 库
-        const converter = OpenCC.Converter({ from: 'cn', to: 'tw' });
+    // 定义函数来执行替换文本操作
+    function replaceText(keywords) {
+        var inputText = document.getElementById('inputText').value;
+        var replacedText = inputText;
+        var count = 0;
+        var logText = "<div class='bold-text'>已完成以下关键词的替换：</div><br>";
 
-        // 获取按钮元素
-        var convertButton = document.getElementById('convertButton');
+        for (var key in keywords) {
+            var regExp = new RegExp(RegExp.escape(key), 'g');
+            var replacement = keywords[key];
+            var matches = replacedText.match(regExp);
 
-        // 获取消息框元素
-        var messageBox = document.getElementById('messageBox');
+            if (matches) {
+                count += matches.length;
+                replacedText = replacedText.replace(regExp, replacement);
+                logText += key + ": " + replacement + "<br>";
+            }
+        }
 
-        // 添加点击事件处理程序
-        convertButton.addEventListener('click', function() {
-            // 获取 inputText 文本框的值
-            var inputText = document.getElementById('inputText');
-            var inputTextValue = inputText.value;
+        document.getElementById('outputText').value = capitalizeWords(replacedText);
+        document.getElementById('replaceResult').innerHTML = logText;
+        document.getElementById('replaceCount').innerHTML = "<div class='bold-text'>已替换 " + count + " 个关键词。</div>";
+    }
 
-            // 将 inputText 文本框的值传递给 converter 进行转换
-            var convertedText = converter(inputTextValue);
+    function selectAndCopy() {
+        var outputText = document.getElementById('outputText');
+        outputText.select();
+        document.execCommand('copy');
+        alert('已复制到剪贴板');
+    }
 
-            // 将转换后的文本设置回 inputText 文本框
-            inputText.value = convertedText;
+    // 加载数据并替换文本
+    loadData(dataUrl, function(csvData) {
+        var keywords = parseCsvData(csvData);
+        document.getElementById('replaceButton').onclick = function() {
+            replaceText(keywords);
+        };
+        document.getElementById('copyButton').onclick = selectAndCopy;
+    });
 
-            // 设置消息文本
-            var messageText = '繁體轉換成功！';
+    // 引入 OpenCC 库
+    const converter = OpenCC.Converter({ from: 'cn', to: 'tw' });
 
-            // 显示提示消息
-            messageBox.style.display = 'block';
-            messageBox.innerText = messageText;
+    // 获取按钮元素
+    var convertButton = document.getElementById('convertButton');
 
-            // 隔一段时间后隐藏提示消息
-            setTimeout(function() {
-                messageBox.style.display = 'none';
-            }, 3000); // 3秒后隐藏消息
-        });
-    </script>
+    // 获取消息框元素
+    var messageBox = document.getElementById('messageBox');
+
+    // 添加点击事件处理程序
+    convertButton.addEventListener('click', function() {
+        // 获取 inputText 文本框的值
+        var inputText = document.getElementById('inputText');
+        var inputTextValue = inputText.value;
+
+        // 将 inputText 文本框的值传递给 converter 进行转换
+        var convertedText = converter(inputTextValue);
+
+        // 将转换后的文本设置回 inputText 文本框
+        inputText.value = convertedText;
+
+        // 设置消息文本
+        var messageText = '繁體轉換成功！';
+
+        // 显示提示消息
+        messageBox.style.display = 'block';
+        messageBox.innerText = messageText;
+
+        // 隔一段时间后隐藏提示消息
+        setTimeout(function() {
+            messageBox.style.display = 'none';
+        }, 3000); // 3秒后隐藏消息
+    });
+
+    // 定义函数来解析 CSV 数据
+    function parseCsvData(csvData) {
+        var lines = csvData.split('\n');
+        var keywords = {};
+        for (var i = 0; i < lines.length; i++) {
+            var parts = lines[i].split(',');
+            if (parts.length >= 2) {
+                keywords[parts[0].trim()] = parts[1].trim();
+            }
+        }
+        console.log("关键词对象：", keywords);
+        return keywords;
+    }
+</script>
 </body>
 </html>
