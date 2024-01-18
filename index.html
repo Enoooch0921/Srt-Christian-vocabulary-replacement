@@ -183,11 +183,13 @@
         var lines = inputText.split('\n');
         var newText = "";
         for (var i = 0; i < lines.length; i += 4) {
-            newText += lines[i + 2] + '\n';
+            if (lines[i + 2] !== undefined) { // 檢查索引是否在數組範圍內
+                newText += lines[i + 2] + '\n'; // 只添加正文部分
+            }
         }
-        
-    document.getElementById('outputText').value = newText;
-}
+        document.getElementById('outputText').value = newText.trim(); // 刪除末尾的空白行
+    }
+
 
     function selectAndCopy() {
         var outputText = document.getElementById('outputText');
