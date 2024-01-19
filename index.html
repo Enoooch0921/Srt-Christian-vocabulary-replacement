@@ -179,8 +179,8 @@
     }
 
     function removeTimecode() {
-        var inputText = document.getElementById('inputText').value;
-        var lines = inputText.split('\n');
+        var outputText = document.getElementById('outputText').value;
+        var lines = outputText.split('\n');
         var newText = "";
         for (var i = 0; i < lines.length; i += 4) {
             if (lines[i + 2] !== undefined) { // 檢查索引是否在數組範圍內
@@ -189,6 +189,7 @@
         }
         document.getElementById('outputText').value = newText.trim(); // 刪除末尾的空白行
     }
+
 
 
     function selectAndCopy() {
