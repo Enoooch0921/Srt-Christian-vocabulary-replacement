@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>基督教詞彙替换工具 - V1.0.4</title>
+    <title>基督教詞彙替換工具 - V1.0.4</title>
     <style>
-        /* 主容器样式 */
+        /* 主容器樣式 */
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
@@ -11,7 +11,7 @@
             padding: 0;
         }
 
-        /* 头部样式 */
+        /* 頭部樣式 */
         h1 {
             background-color: #4285f4;
             color: #ffffff;
@@ -19,7 +19,7 @@
             text-align: center;
         }
 
-        /* 输入和输出文本框容器样式 */
+        /* 輸入和輸出文本框容器樣式 */
         .text-box-container {
             display: flex;
             justify-content: space-between;
@@ -27,8 +27,8 @@
             margin: 10px;
         }
 
-        /* 输入文本框样式 */
-        #inputText {
+        /* 輸入文本框樣式 */
+        #inputText, #outputText {
             flex: 1;
             padding: 10px;
             border: 1px solid #ccc;
@@ -38,25 +38,14 @@
             height: 400px;
         }
 
-        /* 输出文本框样式 */
-        #outputText {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: none;
-            width: 100%;
-            height: 400px;
-        }
-
-        /* 按钮容器样式 */
+        /* 按鈕容器樣式 */
         .button-container {
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* 按钮样式 */
+        /* 按鈕樣式 */
         button {
             background-color: #4285f4;
             color: #ffffff;
@@ -68,13 +57,12 @@
             transition: background-color 0.3s;
         }
 
-        /* 按钮悬停样式 */
+        /* 按鈕懸停樣式 */
         button:hover {
             background-color: #3570e8;
         }
-        
 
-        /* 结果容器样式 */
+        /* 結果容器樣式 */
         .result-container {
             background-color: #ffffff;
             padding: 20px;
@@ -83,13 +71,13 @@
             border-radius: 5px;
         }
 
-        /* 加粗文本样式 */
+        /* 加粗文本樣式 */
         .bold-text {
             font-weight: bold;
             font-size: 1.1em;
         }
 
-        #messageBox {
+        #messageBox, #errorBox, #copyBox {
             display: none;
             position: fixed;
             top: 50%;
@@ -101,30 +89,37 @@
             border-radius: 5px;
             text-align: center;
             font-weight: bold;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+
+        #errorBox {
+            background-color: #FF0000;
         }
 
     </style>
 </head>
 <body>
-<h1>基督教詞彙替换工具 - V1.0.4</h1>
+<h1>基督教詞彙替換工具 - V1.0.4</h1>
 <div class="text-box-container">
-    <textarea id="inputText" rows="10" cols="80" placeholder="在这里输入或粘贴文本..."></textarea>
-    <textarea id="outputText" rows="10" cols="80" placeholder="替换后的文本将在这里显示..."></textarea>
+    <textarea id="inputText" placeholder="在這裡輸入或粘貼文本..."></textarea>
+    <textarea id="outputText" placeholder="替換後的文本將在這裡顯示..."></textarea>
 </div>
 
 <div class="button-container">
     <button id="convertButton">簡體轉繁體</button>
-    <button id="replaceButton">替换文本并首字母大写</button>
+    <button id="replaceButton">替換文本並首字母大寫</button>
     <button id="removeTimecodesButton">刪除時間碼</button>
-    <button id="copyButton">全选复制</button>
+    <button id="copyButton">全選複製</button>
 </div>
-<div id="messageBox" style="display: none;"></div>
+<div id="messageBox">繁體轉換成功！</div>
+<div id="errorBox">當中沒有時間碼可以刪除</div>
+<div id="copyBox">已複製到剪貼板</div>
 <div class="result-container">
-    <div id="replaceResult" class="bold-text">已完成以下关键词的替换：</div>
-    <div id="replaceCount" class="bold-text">已替换 0 个关键词。</div>
+    <div id="replaceResult" class="bold-text">已完成以下關鍵詞的替換：</div>
+    <div id="replaceCount" class="bold-text">已替換 0 個關鍵詞。</div>
 </div>
 
-<!-- 将 JavaScript 代码放在页面底部 -->
 <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/cn2t.js"></script>
 <script>
     var dataUrl = 'https://raw.githubusercontent.com/Enoooch0921/Srt-Christian-vocabulary-replacement/main/keywords.csv';
@@ -133,36 +128,34 @@
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4 && xhr.status === 200) {
-                var response = xhr.responseText;
-                callback(response);
+                callback(xhr.responseText);
             }
         };
         xhr.open('GET', url, true);
         xhr.send();
     }
 
-    // 添加 RegExp.escape 函数
+    // 添加 RegExp.escape 函數
     RegExp.escape = function(s) {
         return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     };
 
-    // 定义函数来执行英文首字母大写转换
+    // 定義函數來執行英文首字母大寫轉換
     function capitalizeWords(text) {
-        // 使用正则表达式匹配英文单词，并将其首字母转换为大写
-        return text.replace(/\b\w/g, function (match) {
+        return text.replace(/\b\w/g, function(match) {
             return match.toUpperCase();
         });
     }
 
-    // 定义函数来执行替换文本操作
+    // 定義函數來執行替換文本操作
     function replaceText(keywords) {
         var inputText = document.getElementById('inputText').value;
         var replacedText = inputText;
         var count = 0;
-        var logText = "<div class='bold-text'>已完成以下关键词的替换：</div><br>";
+        var logText = "<div class='bold-text'>已完成以下關鍵詞的替換：</div><br>";
 
         for (var key in keywords) {
-            var regExp = new RegExp(RegExp.escape(key), 'g');
+            var regExp = new RegExp(RegExp.escape(key), 'gi'); // 使用'gi'标志
             var replacement = keywords[key];
             var matches = replacedText.match(regExp);
 
@@ -175,87 +168,118 @@
 
         document.getElementById('outputText').value = capitalizeWords(replacedText);
         document.getElementById('replaceResult').innerHTML = logText;
-        document.getElementById('replaceCount').innerHTML = "<div class='bold-text'>已替换 " + count + " 个关键词。</div>";
+        document.getElementById('replaceCount').innerHTML = "<div class='bold-text'>已替換 " + count + " 個關鍵詞。</div>";
     }
 
     function removeTimecode() {
         var outputText = document.getElementById('outputText').value;
         var lines = outputText.split('\n');
-        var newText = "";
-        for (var i = 0; i < lines.length; i += 4) {
-            if (lines[i + 2] !== undefined) { // 檢查索引是否在數組範圍內
-                newText += lines[i + 2] + '\n'; // 只添加正文部分
+        var newText = [];
+        var timecodePattern = /^\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}$/;
+        var hasTimecodes = false;
+
+        for (var i = 0; i < lines.length; i++) {
+            // 如果当前行是时间码行，则下一个非空行是内容行
+            if (timecodePattern.test(lines[i])) {
+                hasTimecodes = true;
+                if (i + 1 < lines.length && lines[i + 1].trim() !== '') {
+                    newText.push(lines[i + 1]);
+                }
             }
         }
-        document.getElementById('outputText').value = newText.trim(); // 刪除末尾的空白行
+
+        if (hasTimecodes) {
+            document.getElementById('outputText').value = newText.join('\n').trim();
+        } else {
+            showError('當中沒有時間碼可以刪除');
+        }
     }
 
+    function showError(message) {
+        var errorBox = document.getElementById('errorBox');
+        errorBox.innerText = message;
+        errorBox.style.display = 'block';
+        setTimeout(function() {
+            errorBox.style.opacity = '0';
+            setTimeout(function() {
+                errorBox.style.display = 'none';
+                errorBox.style.opacity = '1';
+            }, 1000);
+        }, 3000);
+    }
 
+    function showMessage(message) {
+        var messageBox = document.getElementById('messageBox');
+        messageBox.innerText = message;
+        messageBox.style.display = 'block';
+        setTimeout(function() {
+            messageBox.style.opacity = '0';
+            setTimeout(function() {
+                messageBox.style.display = 'none';
+                messageBox.style.opacity = '1';
+            }, 1000);
+        }, 3000);
+    }
+
+    function showCopyMessage(message) {
+        var copyBox = document.getElementById('copyBox');
+        copyBox.innerText = message;
+        copyBox.style.display = 'block';
+        setTimeout(function() {
+            copyBox.style.opacity = '0';
+            setTimeout(function() {
+                copyBox.style.display = 'none';
+                copyBox.style.opacity = '1';
+            }, 1000);
+        }, 3000);
+    }
 
     function selectAndCopy() {
         var outputText = document.getElementById('outputText');
         outputText.select();
         document.execCommand('copy');
-        alert('已复制到剪贴板');
+        showCopyMessage('已複製到剪貼板');
     }
 
-    // 加载数据并替换文本
+    // 加載數據並綁定按鈕事件
     loadData(dataUrl, function(csvData) {
         var keywords = parseCsvData(csvData);
         document.getElementById('replaceButton').onclick = function() {
             replaceText(keywords);
         };
-        document.getElementById('copyButton').onclick = selectAndCopy;
     });
 
-    // 引入 OpenCC 库
-    const converter = OpenCC.Converter({ from: 'cn', to: 'tw' });
+    document.getElementById('copyButton').onclick = selectAndCopy;
+    document.getElementById('removeTimecodesButton').onclick = removeTimecode;
 
-    // 获取按钮元素
+    // 引入 OpenCC 庫
+    // eslint-disable-next-line
+    const converter = OpenCC.Converter({ from: "cn", to: "tw" });
+
+    // 獲取按鈕元素
     var convertButton = document.getElementById('convertButton');
 
-    // 获取消息框元素
-    var messageBox = document.getElementById('messageBox');
-
-    // 添加点击事件处理程序
+    // 添加點擊事件處理程序
     convertButton.addEventListener('click', function() {
-        // 获取 inputText 文本框的值
-        var inputText = document.getElementById('inputText');
-        var inputTextValue = inputText.value;
-
-        // 将 inputText 文本框的值传递给 converter 进行转换
-        var convertedText = converter(inputTextValue);
-
-        // 将转换后的文本设置回 inputText 文本框
-        inputText.value = convertedText;
-
-        // 设置消息文本
-        var messageText = '繁體轉換成功！';
-
-        // 显示提示消息
-        messageBox.style.display = 'block';
-        messageBox.innerText = messageText;
-
-        // 隔一段时间后隐藏提示消息
-        setTimeout(function() {
-            messageBox.style.display = 'none';
-        }, 3000); // 3秒后隐藏消息
+        var inputText = document.getElementById('inputText').value;
+        var convertedText = converter(inputText);
+        document.getElementById('inputText').value = convertedText;
+        showMessage('繁體轉換成功！');
     });
 
-    // 定义函数来解析 CSV 数据
+    // 定義函數來解析 CSV 數據
     function parseCsvData(csvData) {
         var lines = csvData.split('\n');
         var keywords = {};
-        for (var i = 0; i < lines.length; i++) {
-            var parts = lines[i].split(',');
+        lines.forEach(function(line) {
+            var parts = line.split(',');
             if (parts.length >= 2) {
                 keywords[parts[0].trim()] = parts[1].trim();
             }
-        }
-        console.log("关键词对象：", keywords);
+        });
+        console.log("關鍵詞對象：", keywords);
         return keywords;
     }
-    document.getElementById('removeTimecodesButton').onclick = removeTimecode;
 
 </script>
 </body>
