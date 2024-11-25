@@ -165,8 +165,8 @@
                     var lines = replacedText.split('\n');
                     for (var i = 0; i < lines.length; i++) {
                         if (lines[i].match(regExp)) {
-                            var start = Math.max(0, i - 20);
-                            var end = Math.min(lines.length - 1, i + 20);
+                            var start = Math.max(0, i - 50);
+                            var end = Math.min(lines.length - 1, i + 50);
                             var contextMatch = context.some(function(ctxWord) {
                                 for (var j = start; j <= end; j++) {
                                     if (lines[j].includes(ctxWord)) {
