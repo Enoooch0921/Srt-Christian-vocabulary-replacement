@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>基督教詞彙替換工具 - V1.0.5</title>
+    <title>基督教詞彙替換工具 - V1.0.6</title>
     <style>
         /* 主容器樣式 */
         body {
@@ -100,7 +100,7 @@
     </style>
 </head>
 <body>
-<h1>基督教詞彙替換工具 - V1.0.5</h1>
+<h1>基督教詞彙替換工具 - V1.0.6</h1>
 <div class="text-box-container">
     <textarea id="inputText" placeholder="在這裡輸入或粘貼文本..."></textarea>
     <textarea id="outputText" placeholder="替換後的文本將在這裡顯示..."></textarea>
@@ -155,14 +155,44 @@
         var logText = "<div class='bold-text'>已完成以下關鍵詞的替換：</div><br>";
 
         for (var key in keywords) {
-            var regExp = new RegExp(RegExp.escape(key), 'gi'); // 使用'gi'标志
-            var replacement = keywords[key];
-            var matches = replacedText.match(regExp);
+            if (typeof keywords[key] === 'object') {
+                var [replacement, context] = keywords[key];
+                var regExp = new RegExp(RegExp.escape(key), 'gi');
+                var matches = replacedText.match(regExp);
 
-            if (matches) {
-                count += matches.length;
-                replacedText = replacedText.replace(regExp, replacement);
-                logText += key + ": " + replacement + "<br>";
+                if (matches) {
+                    // 需要判斷上下文的替換
+                    var lines = replacedText.split('\n');
+                    for (var i = 0; i < lines.length; i++) {
+                        if (lines[i].match(regExp)) {
+                            var start = Math.max(0, i - 20);
+                            var end = Math.min(lines.length - 1, i + 20);
+                            var contextMatch = context.some(function(ctxWord) {
+                                for (var j = start; j <= end; j++) {
+                                    if (lines[j].includes(ctxWord)) {
+                                        return true;
+                                    }
+                                }
+                                return false;
+                            });
+                            if (contextMatch) {
+                                lines[i] = lines[i].replace(regExp, replacement);
+                                count++;
+                                logText += key + ": " + replacement + "<br>";
+                            }
+                        }
+                    }
+                    replacedText = lines.join('\n');
+                }
+            } else {
+                // 普通替換，不需要上下文
+                var regExp = new RegExp(RegExp.escape(key), 'gi');
+                var matches = replacedText.match(regExp);
+                if (matches) {
+                    count += matches.length;
+                    replacedText = replacedText.replace(regExp, keywords[key]);
+                    logText += key + ": " + keywords[key] + "<br>";
+                }
             }
         }
 
@@ -274,7 +304,11 @@
         lines.forEach(function(line) {
             var parts = line.split(',');
             if (parts.length >= 2) {
-                keywords[parts[0].trim()] = parts[1].trim();
+                if (parts.length === 3) {
+                    keywords[parts[0].trim()] = [parts[1].trim(), parts[2].trim().split('|')];
+                } else {
+                    keywords[parts[0].trim()] = parts[1].trim();
+                }
             }
         });
         console.log("關鍵詞對象：", keywords);
