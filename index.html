@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>基督教詞彙替換工具 - V1.4.0 (Filtered View)</title>
+    <title>基督教詞彙替換工具 - V1.4.1 (Bug Fix)</title>
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -320,7 +320,7 @@
 
 <div class="container">
     <header>
-        <h1>基督教詞彙替換工具 <span class="badge">V1.4</span></h1>
+        <h1>基督教詞彙替換工具 <span class="badge">V1.4.1</span></h1>
         <button id="darkModeToggle">🌓 切換模式</button>
     </header>
 
@@ -464,6 +464,10 @@
         let htmlText = escapeHtml(rawInput); 
         let count = 0;
 
+        // 定義佔位符 (使用不容易被 CSV 關鍵字匹配到的特殊字串)
+        const TAG_START = '###HL_START_TAG###';
+        const TAG_END = '###HL_END_TAG###';
+
         for (const key in keywords) {
             const regExp = new RegExp(escapeRegExp(key), 'gi');
             
@@ -500,12 +504,19 @@
                 }
             }
 
-            // 2. HTML 高亮標記 (簡化版：只標記位置)
+            // 2. HTML 高亮標記 (修正重點：使用佔位符)
             const target = (typeof keywords[key] === 'object') ? keywords[key][0] : keywords[key];
+            
+            // 這裡不直接插入 <span...>，而是插入佔位符
             htmlText = htmlText.replace(regExp, (match) => {
-                return '<span class="highlight-tag">' + target + '</span>';
+                return TAG_START + target + TAG_END;
             });
         }
+
+        // 迴圈結束後，統一將佔位符換成真正的 HTML 標籤
+        // 這樣可以避免 <span class="..."> 裡面的單字被後續的關鍵字誤傷
+        htmlText = htmlText.split(TAG_START).join('<span class="highlight-tag">');
+        htmlText = htmlText.split(TAG_END).join('</span>');
 
         plainText = capitalizeWords(plainText);
         
