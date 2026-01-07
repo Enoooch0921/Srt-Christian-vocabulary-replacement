@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>基督教詞彙替換工具 - V1.3.0</title>
+    <title>基督教詞彙替換工具 - V1.4.0 (Filtered View)</title>
     <style>
         :root {
-            --primary-color: #4f46e5; /* Indigo 600 */
+            --primary-color: #4f46e5;
             --primary-hover: #4338ca;
-            --success-color: #059669; /* Emerald 600 */
+            --success-color: #059669;
             --success-hover: #047857;
             --bg-color: #f3f4f6;
             --card-bg: #ffffff;
@@ -18,6 +18,7 @@
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --highlight-bg: #fef08a;
             --highlight-text: #854d0e;
+            --diff-line-border: #e2e8f0;
         }
 
         body.dark-mode {
@@ -33,6 +34,7 @@
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
             --highlight-bg: #854d0e;
             --highlight-text: #fefce8;
+            --diff-line-border: #4b5563;
         }
 
         /* 基礎設定 */
@@ -45,11 +47,11 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* 讓內容從上方開始，不要垂直置中 */
+            align-items: flex-start;
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* 主容器卡片 */
+        /* 主容器 */
         .container {
             background-color: var(--card-bg);
             border-radius: 16px;
@@ -61,7 +63,7 @@
             margin-top: 20px;
         }
 
-        /* Header 區域 */
+        /* Header */
         header {
             display: flex;
             justify-content: space-between;
@@ -90,7 +92,7 @@
             font-weight: 500;
         }
 
-        /* 深色模式按鈕 */
+        /* 按鈕與互動 */
         #darkModeToggle {
             background: transparent;
             border: 1px solid var(--border-color);
@@ -101,9 +103,7 @@
             font-size: 0.9rem;
             transition: all 0.2s;
         }
-        #darkModeToggle:hover {
-            background-color: var(--bg-color);
-        }
+        #darkModeToggle:hover { background-color: var(--bg-color); }
 
         /* 編輯區域 Grid */
         .editor-grid {
@@ -114,9 +114,7 @@
         }
         
         @media (max-width: 768px) {
-            .editor-grid {
-                grid-template-columns: 1fr;
-            }
+            .editor-grid { grid-template-columns: 1fr; }
         }
 
         .editor-col {
@@ -147,12 +145,19 @@
             border-radius: 8px;
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Consolas', 'Monaco', monospace; /* 等寬字體方便對齊字幕 */
+            font-family: 'Consolas', 'Monaco', monospace;
             font-size: 14px;
             line-height: 1.6;
             resize: vertical;
             box-sizing: border-box;
             transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        /* 拖曳效果 */
+        textarea.drag-over {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: rgba(79, 70, 229, 0.05);
         }
 
         textarea:focus {
@@ -166,7 +171,7 @@
             display: none;
             overflow-y: auto;
             white-space: pre-wrap;
-            border-color: var(--success-color); /* 區分這是預覽模式 */
+            border-color: var(--success-color);
         }
 
         .highlight-tag {
@@ -176,8 +181,21 @@
             border-radius: 4px;
             font-weight: bold;
         }
+        
+        .diff-line {
+            padding: 6px 0;
+            border-bottom: 1px dashed var(--diff-line-border);
+        }
+        .diff-line:last-child { border-bottom: none; }
+        
+        .empty-diff {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-sub);
+            font-style: italic;
+        }
 
-        /* 視圖切換按鈕 (Badge Style) */
+        /* 視圖切換按鈕 */
         .view-toggle {
             font-size: 0.8rem;
             background-color: var(--bg-color);
@@ -198,7 +216,7 @@
             border-color: var(--primary-color);
         }
 
-        /* 操作區 (Action Bar) */
+        /* 操作區 */
         .action-bar {
             background-color: var(--bg-color);
             padding: 20px;
@@ -216,7 +234,7 @@
             flex-wrap: wrap;
         }
 
-        /* 按鈕通用樣式 */
+        /* 按鈕樣式 */
         button.btn {
             padding: 10px 18px;
             border: none;
@@ -230,17 +248,13 @@
             gap: 6px;
         }
 
-        button.btn:active {
-            transform: scale(0.98);
-        }
+        button.btn:active { transform: scale(0.98); }
 
         button.btn-primary {
             background-color: var(--primary-color);
             color: white;
         }
-        button.btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
+        button.btn-primary:hover { background-color: var(--primary-hover); }
 
         button.btn-secondary {
             background-color: white;
@@ -251,21 +265,16 @@
             background-color: #374151;
             border-color: #4b5563;
         }
-        button.btn-secondary:hover {
-            background-color: var(--bg-color);
-        }
+        button.btn-secondary:hover { background-color: var(--bg-color); }
 
         button.btn-ai {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
         }
-        button.btn-ai:hover {
-            opacity: 0.9;
-            box-shadow: 0 6px 8px rgba(16, 185, 129, 0.3);
-        }
+        button.btn-ai:hover { opacity: 0.9; }
 
-        /* 結果狀態列 */
+        /* 狀態列 */
         .status-bar {
             margin-top: 20px;
             font-size: 0.9rem;
@@ -281,12 +290,12 @@
             color: var(--primary-color);
         }
 
-        /* Toast 通知樣式 (底部浮動) */
+        /* Toast 通知 */
         .toast {
             position: fixed;
             bottom: 30px;
             left: 50%;
-            transform: translateX(-50%) translateY(100px); /* 初始隱藏 */
+            transform: translateX(-50%) translateY(100px);
             background-color: #323232;
             color: white;
             padding: 12px 24px;
@@ -296,9 +305,6 @@
             opacity: 0;
             transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             z-index: 2000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         
         .toast.show {
@@ -306,9 +312,7 @@
             opacity: 1;
         }
         
-        .toast.error {
-            background-color: #ef4444;
-        }
+        .toast.error { background-color: #ef4444; }
 
     </style>
 </head>
@@ -316,24 +320,24 @@
 
 <div class="container">
     <header>
-        <h1>基督教詞彙替換工具 <span class="badge">V1.3</span></h1>
+        <h1>基督教詞彙替換工具 <span class="badge">V1.4</span></h1>
         <button id="darkModeToggle">🌓 切換模式</button>
     </header>
 
     <div class="editor-grid">
         <div class="editor-col">
             <div class="label-row">
-                <label for="inputText">📥 原始字幕 (SRT)</label>
+                <label for="inputText">📥 原始字幕 (SRT) - 可拖曳檔案</label>
             </div>
-            <textarea id="inputText" placeholder="請將原始 .srt 內容貼在這裡..."></textarea>
+            <textarea id="inputText" placeholder="請將原始 .srt 內容貼在這裡，或者直接將檔案拖入..."></textarea>
         </div>
 
         <div class="editor-col">
             <div class="label-row">
                 <label for="outputText">📤 處理結果</label>
-                <button id="toggleViewBtn" class="view-toggle">👁️ 預覽高亮差異</button>
+                <button id="toggleViewBtn" class="view-toggle">👁️ 僅顯示已修改處</button>
             </div>
-            <textarea id="outputText" placeholder="處理後的結果會顯示在這裡，你可以直接編輯..."></textarea>
+            <textarea id="outputText" placeholder="處理後的結果會顯示在這裡..."></textarea>
             <div id="highlightDiv"></div>
         </div>
     </div>
@@ -346,6 +350,7 @@
         </div>
         
         <div class="btn-group">
+            <button id="downloadButton" class="btn btn-secondary">💾 下載檔案</button>
             <button id="copyButton" class="btn btn-secondary">📋 全選複製</button>
             <button id="aiPromptButton" class="btn btn-ai">✨ 複製 AI 校對指令</button>
         </div>
@@ -363,14 +368,19 @@
 
 <script>
     // ==========================================
-    //  邏輯核心 (保留原本的 JS 功能，僅修改 UI 互動)
+    //  配置與變數
     // ==========================================
+    const DATA_URL = 'https://raw.githubusercontent.com/Enoooch0921/Srt-Christian-vocabulary-replacement/main/keywords.csv';
+    let globalKeywords = {}; 
+    let isHighlightMode = false;
 
-    var dataUrl = 'https://raw.githubusercontent.com/Enoooch0921/Srt-Christian-vocabulary-replacement/main/keywords.csv';
-    var globalKeywords = {}; 
+    // ==========================================
+    //  工具函數 (Helpers)
+    // ==========================================
 
     // HTML 轉義
     function escapeHtml(text) {
+        if (!text) return "";
         return text
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -379,28 +389,27 @@
             .replace(/'/g, "&#039;");
     }
 
-    // 顯示 Toast 通知的函數 (新版)
+    // Toast 通知
     function showToast(message, type = 'normal') {
-        var toast = document.getElementById('toast');
+        const toast = document.getElementById('toast');
         toast.innerText = message;
-        toast.className = 'toast show'; // 重置 class
+        toast.className = 'toast show';
         
         if (type === 'error') {
             toast.classList.add('error');
         }
 
-        setTimeout(function() {
+        setTimeout(() => {
             toast.classList.remove('show');
         }, 3000);
     }
+    // 兼容舊函數名
+    const showMessage = (msg) => showToast(msg);
+    const showError = (msg) => showToast(msg, 'error');
 
-    // 兼容舊版函數名，導向新的 Toast
-    function showMessage(msg) { showToast(msg); }
-    function showError(msg) { showToast(msg, 'error'); }
-    function showCopyMessage(msg) { showToast(msg); }
-
+    // 下載資料
     function loadData(url, callback) {
-        var xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4 && xhr.status === 200) {
                 callback(xhr.responseText);
@@ -410,43 +419,66 @@
         xhr.send();
     }
 
-    RegExp.escape = function(s) {
-        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    };
-
-    function capitalizeWords(text) {
-        return text.replace(/\b\w/g, function(match) { return match.toUpperCase(); });
+    // 正則轉義 (不修改 Prototype)
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    // 核心替換邏輯
+    // 單詞首字母大寫
+    function capitalizeWords(text) {
+        return text.replace(/\b\w/g, (match) => match.toUpperCase());
+    }
+
+    // 解析 CSV
+    function parseCsvData(csvData) {
+        const lines = csvData.split('\n');
+        const keywords = {};
+        lines.forEach(line => {
+            const parts = line.split(',');
+            if (parts.length >= 2) {
+                if (parts.length === 3) {
+                    keywords[parts[0].trim()] = [parts[1].trim(), parts[2].trim().split('|')];
+                } else {
+                    keywords[parts[0].trim()] = parts[1].trim();
+                }
+            }
+        });
+        globalKeywords = keywords;
+        return keywords;
+    }
+
+    // ==========================================
+    //  核心邏輯 (Core Logic)
+    // ==========================================
+
     function replaceText(keywords) {
-        var rawInput = document.getElementById('inputText').value;
+        const inputArea = document.getElementById('inputText');
+        const rawInput = inputArea.value;
+
         if(!rawInput.trim()) {
             showError("請先輸入內容！");
             return;
         }
 
-        var plainText = rawInput;
-        var htmlText = escapeHtml(rawInput); 
-        
-        var count = 0;
-        var logText = "已完成以下替換： ";
+        let plainText = rawInput;
+        let htmlText = escapeHtml(rawInput); 
+        let count = 0;
 
-        for (var key in keywords) {
-            var regExp = new RegExp(RegExp.escape(key), 'gi');
+        for (const key in keywords) {
+            const regExp = new RegExp(escapeRegExp(key), 'gi');
             
             // 1. 純文本處理
             if (typeof keywords[key] === 'object') {
-                var [replacement, context] = keywords[key];
-                var matches = plainText.match(regExp);
+                const [replacement, context] = keywords[key];
+                const matches = plainText.match(regExp);
                 if (matches) {
-                    var lines = plainText.split('\n');
-                    for (var i = 0; i < lines.length; i++) {
+                    const lines = plainText.split('\n');
+                    for (let i = 0; i < lines.length; i++) {
                         if (lines[i].match(regExp)) {
-                            var start = Math.max(0, i - 1);
-                            var end = Math.min(lines.length - 1, i + 1);
-                            var contextMatch = context.some(function(ctxWord) {
-                                for (var j = start; j <= end; j++) {
+                            const start = Math.max(0, i - 1);
+                            const end = Math.min(lines.length - 1, i + 1);
+                            const contextMatch = context.some(ctxWord => {
+                                for (let j = start; j <= end; j++) {
                                     if (lines[j].includes(ctxWord)) return true;
                                 }
                                 return false;
@@ -460,30 +492,42 @@
                     plainText = lines.join('\n');
                 }
             } else {
-                var replacement = keywords[key];
-                var matches = plainText.match(regExp);
+                const replacement = keywords[key];
+                const matches = plainText.match(regExp);
                 if (matches) {
                     count += matches.length;
                     plainText = plainText.replace(regExp, replacement);
                 }
             }
 
-            // 2. HTML 高亮處理 (簡化版：只標記位置)
-            var target = (typeof keywords[key] === 'object') ? keywords[key][0] : keywords[key];
-            htmlText = htmlText.replace(regExp, function(match) {
+            // 2. HTML 高亮標記 (簡化版：只標記位置)
+            const target = (typeof keywords[key] === 'object') ? keywords[key][0] : keywords[key];
+            htmlText = htmlText.replace(regExp, (match) => {
                 return '<span class="highlight-tag">' + target + '</span>';
             });
         }
 
         plainText = capitalizeWords(plainText);
         
+        // --- 修改核心：過濾並產生預覽 HTML ---
+        const allLines = htmlText.split('\n');
+        let filteredHtml = allLines
+            .filter(line => line.includes('class="highlight-tag"')) // 只取有修改的行
+            .map(line => `<div class="diff-line">${line}</div>`)    // 包裝成 div
+            .join('');
+
+        if (filteredHtml.trim() === "") {
+            filteredHtml = '<div class="empty-diff">沒有發現任何需要替換的內容</div>';
+        }
+
         document.getElementById('outputText').value = plainText;
-        document.getElementById('highlightDiv').innerHTML = htmlText;
+        document.getElementById('highlightDiv').innerHTML = filteredHtml;
         
-        // 更新狀態列
+        // 更新狀態
         document.getElementById('replaceResult').innerText = "✅ 處理完成！";
         document.getElementById('replaceCount').innerText = "共替換 " + count + " 個詞彙";
         
+        // 如果當前是預覽模式，強制刷新顯示
         if(isHighlightMode) {
              document.getElementById('highlightDiv').style.display = 'block';
              document.getElementById('outputText').style.display = 'none';
@@ -492,117 +536,146 @@
         showToast("替換完成！共 " + count + " 處修改");
     }
 
-    // 視圖切換
-    var isHighlightMode = false;
+    function removeTimecode() {
+        const outputText = document.getElementById('outputText').value;
+        if(!outputText) { showError("沒有內容可以處理"); return; }
+        
+        const lines = outputText.split('\n');
+        const newText = [];
+        const timecodePattern = /^\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}$/;
+        let hasTimecodes = false;
+
+        for (let i = 0; i < lines.length; i++) {
+            // 檢查是否為時間碼
+            if (timecodePattern.test(lines[i])) {
+                hasTimecodes = true;
+                // 時間碼的下一行通常是字幕內容，保留它
+                if (i + 1 < lines.length && lines[i + 1].trim() !== '') {
+                    newText.push(lines[i + 1]);
+                }
+            } 
+            // 如果不是時間碼，也不是純數字序號(簡單判斷)，可以保留
+            // 這裡簡單邏輯：只針對 SRT 標準格式移除 (序號 -> 時間碼 -> 內容)
+            // 由於用戶需求主要是保留內容，這裡邏輯維持您原本的：僅依賴時間碼判定
+        }
+
+        if (hasTimecodes) {
+            const result = newText.join('\n').trim();
+            document.getElementById('outputText').value = result;
+            showToast("✅ 時間碼已刪除");
+        } else {
+            showError('找不到標準 SRT 時間碼格式');
+        }
+    }
+
+    // ==========================================
+    //  UI 互動與事件綁定
+    // ==========================================
+
+    // 1. 初始化資料載入
+    loadData(DATA_URL, function(csvData) {
+        const keywords = parseCsvData(csvData);
+        document.getElementById('replaceButton').onclick = () => replaceText(keywords);
+    });
+
+    // 2. 視圖切換
     document.getElementById('toggleViewBtn').addEventListener('click', function() {
-        var txtArea = document.getElementById('outputText');
-        var hlDiv = document.getElementById('highlightDiv');
-        var btn = document.getElementById('toggleViewBtn');
+        const txtArea = document.getElementById('outputText');
+        const hlDiv = document.getElementById('highlightDiv');
+        const btn = document.getElementById('toggleViewBtn');
 
         if (!isHighlightMode) {
-            if(hlDiv.innerHTML === "") hlDiv.innerHTML = escapeHtml(txtArea.value);
+            // 切換到預覽模式
+            if(hlDiv.innerHTML === "") {
+                // 如果還沒執行過替換，先提示
+                showToast("請先執行替換才能預覽", "error");
+                return;
+            }
             txtArea.style.display = 'none';
             hlDiv.style.display = 'block';
             btn.classList.add('active');
             btn.innerText = "✏️ 返回編輯模式";
         } else {
+            // 切換回編輯模式
             txtArea.style.display = 'block';
             hlDiv.style.display = 'none';
             btn.classList.remove('active');
-            btn.innerText = "👁️ 預覽高亮差異";
+            btn.innerText = "👁️ 僅顯示已修改處";
         }
         isHighlightMode = !isHighlightMode;
     });
 
-    // 刪除時間碼
-    function removeTimecode() {
-        var outputText = document.getElementById('outputText').value;
-        if(!outputText) { showError("沒有內容可以處理"); return; }
-        
-        var lines = outputText.split('\n');
-        var newText = [];
-        var timecodePattern = /^\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}$/;
-        var hasTimecodes = false;
-
-        for (var i = 0; i < lines.length; i++) {
-            if (timecodePattern.test(lines[i])) {
-                hasTimecodes = true;
-                if (i + 1 < lines.length && lines[i + 1].trim() !== '') {
-                    newText.push(lines[i + 1]);
-                }
-            }
-        }
-
-        if (hasTimecodes) {
-            var result = newText.join('\n').trim();
-            document.getElementById('outputText').value = result;
-            document.getElementById('highlightDiv').innerText = result; // 重置高亮
-            showToast("✅ 時間碼已刪除");
-        } else {
-            showError('找不到時間碼格式');
-        }
-    }
-
-    function selectAndCopy() {
-        var outputText = document.getElementById('outputText');
-        if(isHighlightMode) document.getElementById('toggleViewBtn').click();
+    // 3. 複製功能
+    document.getElementById('copyButton').onclick = function() {
+        const outputText = document.getElementById('outputText');
+        if(isHighlightMode) document.getElementById('toggleViewBtn').click(); // 強制切回文字模式以複製
         
         if(!outputText.value) { showError("沒有內容可以複製"); return; }
 
         outputText.select();
         document.execCommand('copy');
         showToast('📋 已複製到剪貼簿');
-    }
+    };
 
-    function parseCsvData(csvData) {
-        var lines = csvData.split('\n');
-        var keywords = {};
-        lines.forEach(function(line) {
-            var parts = line.split(',');
-            if (parts.length >= 2) {
-                if (parts.length === 3) {
-                    keywords[parts[0].trim()] = [parts[1].trim(), parts[2].trim().split('|')];
-                } else {
-                    keywords[parts[0].trim()] = parts[1].trim();
-                }
-            }
-        });
-        globalKeywords = keywords;
-        return keywords;
-    }
-
-    // 初始化與綁定
-    loadData(dataUrl, function(csvData) {
-        var keywords = parseCsvData(csvData);
-        document.getElementById('replaceButton').onclick = function() {
-            replaceText(keywords);
-        };
+    // 4. 下載功能 (新增)
+    document.getElementById('downloadButton').addEventListener('click', function() {
+        const text = document.getElementById('outputText').value;
+        if (!text) { showError("沒有內容可下載"); return; }
+        
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "processed_subtitle.srt";
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showToast("💾 檔案下載開始");
     });
 
-    document.getElementById('copyButton').onclick = selectAndCopy;
+    // 5. 拖曳上傳功能 (新增)
+    const dropZone = document.getElementById('inputText');
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('inputText').value = e.target.result;
+                showToast("檔案載入成功！");
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // 6. 其他按鈕
     document.getElementById('removeTimecodesButton').onclick = removeTimecode;
 
-    // eslint-disable-next-line
+    // OpenCC 簡轉繁
     const converter = OpenCC.Converter({ from: "cn", to: "tw" });
     document.getElementById('convertButton').addEventListener('click', function() {
-        var inputText = document.getElementById('inputText').value;
+        const inputText = document.getElementById('inputText').value;
         if(!inputText) { showError("請先輸入簡體內容"); return; }
-        
-        var convertedText = converter(inputText);
+        const convertedText = converter(inputText);
         document.getElementById('inputText').value = convertedText;
         showToast('🔁 繁體轉換成功！');
     });
 
-    document.getElementById('darkModeToggle').addEventListener('click', function() {
+    // 深色模式
+    document.getElementById('darkModeToggle').addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
     });
 
     // AI Prompt 生成
     document.getElementById('aiPromptButton').addEventListener('click', function() {
-        var outputText = document.getElementById('outputText').value;
+        const outputText = document.getElementById('outputText').value;
         if (!outputText) { showError('輸出框沒有內容，無法生成指令'); return; }
         
-        var prompt = `請幫我校對以下的 SRT 字幕。
+        const prompt = `請幫我校對以下的 SRT 字幕。
 
 【前置說明】
 這份字幕已經過「基督教術語」的自動替換程式處理，但內容來源為語音轉文字，仍可能存在經文、人名與專有名詞的誤判，以及代名詞與敬稱混用。
@@ -611,36 +684,17 @@
 你是一位熟悉中文口語字幕、教會講道與見證影片內容的字幕校對員，了解聖經常見用語、神學語境與人名。
 
 【校對原則與任務要求】
-1. 【絕對禁止】
-   - 不得修改任何序號與時間碼（Timecode）。
-
-2. 【錯別字與語音誤判修正】
-   - 修正同音異字、明顯錯字與語音轉文字造成的不合理詞彙。
-   - 若出現疑似聖經經文，請依常見中文聖經版本（如和合本）修正明顯錯誤，但不得改變經文原意。
-   - 若出現人名，請合理判斷是否為常見人物（如聖經人物、講員、信仰相關人士），僅在高度確定時進行校正，避免猜測性修改。
-
-3. 【代名詞／敬稱一致性（重要）】
-   - 談到上帝／耶穌／聖靈時，優先使用「祢」「祂」，並保持前後一致。
-   - 談到一般人時，使用「你／他／她」，並依上下文判斷性別與對象。
-   - 談到動物或非人物事物時使用「牠／它」。
-   - 談到魔鬼／撒但／邪靈等，若上下文明確指向屬靈存在且不適合用「牠」造成語感偏動物，可改用「他」或「牠」擇一，但需依整段語境統一（同一段落不要來回切換）。
-   - 若上下文不足以判定（例如只出現一句「他說」而沒有前後線索），請不要強行改動，維持原文並在對照表註記「不確定，保留」。
-
-4. 【語句修飾】
-   - 在不改變原意、不加入新資訊的前提下，使語句更口語自然、符合字幕閱讀節奏。
-   - 請避免重寫句型或進行講章式潤稿，你的角色是校對，而非改寫。
-
-5. 【輸出格式（重要）】
-   - 修改後的完整 SRT 內容【務必完整保留格式，並全部放在代碼框中】。
-   - 最後請提供一份修改對照表，清楚列出：
-     原文 → 修改後 → 修改原因（含：錯別字/經文校正/人名查核/代名詞一致性/語句順暢）。
+1. 【絕對禁止】不得修改任何序號與時間碼（Timecode）。
+2. 【錯別字與語音誤判修正】修正同音異字、明顯錯字。若出現疑似聖經經文，請依常見中文聖經版本修正。
+3. 【代名詞／敬稱一致性】上帝／耶穌／聖靈使用「祢」「祂」；一般人使用「你／他／她」；動物使用「牠」。
+4. 【輸出格式】修改後的完整 SRT 內容務必放在代碼框中。最後請提供修改對照表。
 
 【SRT 內容如下】
 ${outputText}`;
 
-        navigator.clipboard.writeText(prompt).then(function() {
+        navigator.clipboard.writeText(prompt).then(() => {
             showToast('✨ 已複製 AI 指令！請貼給 Gemini');
-        }, function() {
+        }, () => {
             showError('複製失敗');
         });
     });
